@@ -30,9 +30,9 @@ Sebelum menjalankan aplikasi, pastikan sistem Anda telah terinstal:
 ## Instalasi & Konfigurasi
 
 1. **Kloning Repositori**
-   ```bash
-   git clone [https://github.com/firdhausranggaa/flask-blog-platform.git](https://github.com/firdhausranggaa/flask-blog-platform.git)
-   cd flask-blog-platform
+```bash
+git clone [https://github.com/firdhausranggaa/flask-blog-platform.git](https://github.com/firdhausranggaa/flask-blog-platform.git)
+cd flask-blog-platform
 
 ```
 
