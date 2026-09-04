@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from app.extensions import db, migrate, login_manager
 from app.models import User
-
+from app.extensions import db, migrate, login_manager, limiter
 
 def create_app():
     app = Flask(__name__)
@@ -14,6 +14,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
+    limiter.init_app(app)
 
     @login_manager.unauthorized_handler
     def unauthorized():

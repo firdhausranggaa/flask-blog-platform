@@ -2,12 +2,14 @@ from flask import Blueprint, jsonify, request
 from app.extensions import db
 from app.models import Post
 from flask_login import login_required, current_user
+from app.extensions import db, limiter
 
 post_bp = Blueprint("post", __name__, url_prefix="/api/post")
 
 
 @post_bp.route("/create", methods=["POST"])
 @login_required
+@limiter.limit("10 per minute")
 def create():
     data = request.get_json() or {}
 
