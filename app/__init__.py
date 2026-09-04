@@ -1,24 +1,28 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_cors import CORS
-from app.extensions import db, migrate, login_manager
-from app.models import User
+from flasgger import Swagger
 from app.extensions import db, migrate, login_manager, limiter
+from app.models import User
+
 
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "dev-key-rahasia"
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost/flask_blog"
 
-    CORS(app, supports_credentials=True)
+    app.config["SWAGGER"] = {"title": "Blogging Platform API", "uiversion": 3}
+    Swagger(app)
 
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
     limiter.init_app(app)
 
+    CORS(app, supports_credentials=True)
+
     @login_manager.unauthorized_handler
     def unauthorized():
-        return {"error": "Akses ditolak, silakan login terlebih dahulu"}, 401
+        return jsonify({"error": "Akses ditolak, silakan login terlebih dahulu"}), 401
 
     @login_manager.user_loader
     def load_user(user_id):

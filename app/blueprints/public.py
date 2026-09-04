@@ -6,6 +6,38 @@ public_bp = Blueprint("public", __name__)
 
 @public_bp.route("/api/posts", methods=["GET"])
 def get_posts():
+    """
+    Mengambil daftar artikel blog dengan fitur paginasi dan pencarian.
+    ---
+    tags:
+      - Publik
+    parameters:
+      - name: page
+        in: query
+        type: integer
+        required: false
+        default: 1
+        description: Nomor halaman.
+      - name: per_page
+        in: query
+        type: integer
+        required: false
+        default: 5
+        description: Jumlah artikel per halaman.
+      - name: category
+        in: query
+        type: string
+        required: false
+        description: Filter berdasarkan kategori artikel.
+      - name: search
+        in: query
+        type: string
+        required: false
+        description: Kata kunci untuk mencari judul atau konten.
+    responses:
+      200:
+        description: Daftar artikel berhasil dikembalikan beserta metadata.
+    """
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 5, type=int)
     category = request.args.get("category")

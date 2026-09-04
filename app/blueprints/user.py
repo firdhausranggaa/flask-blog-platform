@@ -1,8 +1,7 @@
 from flask import Blueprint, jsonify, request
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required, current_user
-from app.extensions import db
 from app.models import User
+from flask_login import login_required, current_user, login_user, logout_user
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.extensions import db, limiter
 
 user_bp = Blueprint("user", __name__, url_prefix="/api/user")
@@ -10,6 +9,28 @@ user_bp = Blueprint("user", __name__, url_prefix="/api/user")
 
 @user_bp.route("/register", methods=["POST"])
 def register():
+    """
+    Mendaftarkan pengguna baru.
+    ---
+    tags:
+      - Pengguna
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      201:
+        description: Registrasi berhasil.
+      400:
+        description: Validasi gagal (username/password tidak sesuai kriteria).
+    """
     data = request.get_json() or {}
     username = data.get("username", "").strip()
     password = data.get("password", "")
@@ -33,6 +54,28 @@ def register():
 @user_bp.route("/login", methods=["POST"])
 @limiter.limit("5 per minute")
 def login():
+    """
+    Login ke dalam sistem.
+    ---
+    tags:
+      - Pengguna
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login berhasil.
+      401:
+        description: Kredensial tidak valid.
+    """
     data = request.get_json() or {}
     username = data.get("username", "")
     password = data.get("password", "")
@@ -58,6 +101,17 @@ def login():
 @user_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
+    """
+    Logout dari sistem (Membutuhkan Login).
+    ---
+    tags:
+      - Pengguna
+    responses:
+      200:
+        description: Logout berhasil.
+      401:
+        description: Belum login.
+    """
     logout_user()
     return jsonify({"message": "Logout berhasil"}), 200
 
@@ -65,4 +119,15 @@ def logout():
 @user_bp.route("/me", methods=["GET"])
 @login_required
 def me():
+    """
+    Mendapatkan data profil pengguna yang sedang login.
+    ---
+    tags:
+      - Pengguna
+    responses:
+      200:
+        description: Berhasil mengembalikan data profil.
+      401:
+        description: Belum login.
+    """
     return jsonify({"user_id": current_user.id, "username": current_user.username})
