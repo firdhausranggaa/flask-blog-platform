@@ -6,19 +6,27 @@ public_bp = Blueprint("public", __name__)
 
 @public_bp.route("/api/posts", methods=["GET"])
 def get_posts():
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 5, type=int)
     category = request.args.get("category")
+    search = request.args.get("search")
+
+    query = Post.query
 
     if category:
-        posts = (
-            Post.query.filter_by(category=category)
-            .order_by(Post.date_posted.desc())
-            .all()
+        query = query.filter_by(category=category)
+
+    if search:
+        query = query.filter(
+            Post.title.ilike(f"%{search}%") | Post.content.ilike(f"%{search}%")
         )
-    else:
-        posts = Post.query.order_by(Post.date_posted.desc()).all()
+
+    paginated_posts = query.order_by(Post.date_posted.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
 
     result = []
-    for post in posts:
+    for post in paginated_posts.items:
         result.append(
             {
                 "id": post.id,
@@ -30,4 +38,19 @@ def get_posts():
             }
         )
 
-    return jsonify(result)
+    return (
+        jsonify(
+            {
+                "data": result,
+                "meta": {
+                    "total_items": paginated_posts.total,
+                    "total_pages": paginated_posts.pages,
+                    "current_page": paginated_posts.page,
+                    "per_page": paginated_posts.per_page,
+                    "has_next": paginated_posts.has_next,
+                    "has_prev": paginated_posts.has_prev,
+                },
+            }
+        ),
+        200,
+    )
