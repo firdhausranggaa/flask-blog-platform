@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from app.extensions import db, migrate, login_manager
 from app.models import User
 
@@ -8,10 +9,15 @@ def create_app():
     app.config["SECRET_KEY"] = "dev-key-rahasia"
     app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost/flask_blog"
 
+    CORS(app, supports_credentials=True)
+
     db.init_app(app)
     migrate.init_app(app, db)
     login_manager.init_app(app)
-    login_manager.login_view = "user.login"
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        return {"error": "Akses ditolak, silakan login terlebih dahulu"}, 401
 
     @login_manager.user_loader
     def load_user(user_id):

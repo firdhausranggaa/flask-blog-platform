@@ -1,61 +1,62 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, jsonify, request
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required, current_user
 from app.extensions import db
 from app.models import User
 
-user_bp = Blueprint("user", __name__, url_prefix="/user")
+user_bp = Blueprint("user", __name__, url_prefix="/api/user")
 
 
-@user_bp.route("/register", methods=["GET", "POST"])
+@user_bp.route("/register", methods=["POST"])
 def register():
-    if current_user.is_authenticated:
-        return redirect(url_for("public.home"))
+    data = request.get_json() or {}
+    username = data.get("username", "")
+    password = data.get("password", "")
 
-    if request.method == "POST":
-        username = request.form.get("username", "")
-        password = request.form.get("password", "")
+    if User.query.filter_by(username=username).first():
+        return jsonify({"error": "Username sudah digunakan"}), 400
 
-        user_exists = User.query.filter_by(username=username).first()
-        if user_exists:
-            flash("Username sudah digunakan, silakan pilih yang lain.")
-            return redirect(url_for("user.register"))
+    hashed_password = generate_password_hash(password)
+    new_user = User(username=username, password=hashed_password)
 
-        hashed_password = generate_password_hash(password)
+    db.session.add(new_user)
+    db.session.commit()
 
-        new_user = User(username=username, password=hashed_password)
-
-        db.session.add(new_user)
-        db.session.commit()
-
-        flash("Registrasi berhasil! Silakan login.")
-        return redirect(url_for("user.login"))
-
-    return render_template("register.html")
+    return jsonify({"message": "Registrasi berhasil"}), 201
 
 
-@user_bp.route("/login", methods=["GET", "POST"])
+@user_bp.route("/login", methods=["POST"])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for("public.home"))
+    data = request.get_json() or {}
+    username = data.get("username", "")
+    password = data.get("password", "")
 
-    if request.method == "POST":
-        username = request.form.get("username", "")
-        password = request.form.get("password", "")
+    user = User.query.filter_by(username=username).first()
 
-        user = User.query.filter_by(username=username).first()
+    if user and check_password_hash(user.password, password):
+        login_user(user)
+        return (
+            jsonify(
+                {
+                    "message": "Login berhasil",
+                    "user_id": user.id,
+                    "username": user.username,
+                }
+            ),
+            200,
+        )
 
-        if user and check_password_hash(user.password, password):
-            login_user(user)
-            return redirect(url_for("public.home"))
-        else:
-            flash("Login gagal. Periksa kembali username dan password Anda.")
-
-    return render_template("login.html")
+    return jsonify({"error": "Kredensial tidak valid"}), 401
 
 
-@user_bp.route("/logout")
+@user_bp.route("/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("public.home"))
+    return jsonify({"message": "Logout berhasil"}), 200
+
+
+@user_bp.route("/me", methods=["GET"])
+@login_required
+def me():
+    return jsonify({"user_id": current_user.id, "username": current_user.username})
