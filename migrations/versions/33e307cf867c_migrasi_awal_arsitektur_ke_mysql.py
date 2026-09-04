@@ -1,8 +1,8 @@
-"""Initial migration
+"""Migrasi awal arsitektur ke MySQL
 
-Revision ID: 35d918870642
+Revision ID: 33e307cf867c
 Revises: 
-Create Date: 2026-09-04 22:57:45.278844
+Create Date: 2026-09-04 23:32:45.629732
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '35d918870642'
+revision = '33e307cf867c'
 down_revision = None
 branch_labels = None
 depends_on = None

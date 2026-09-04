@@ -6,9 +6,7 @@ from app.models import User
 def create_app():
     app = Flask(__name__)
     app.config["SECRET_KEY"] = "dev-key-rahasia"
-    app.config["SQLALCHEMY_DATABASE_URI"] = (
-        "sqlite:///blog.db"
-    )
+    app.config["SQLALCHEMY_DATABASE_URI"] = "mysql+pymysql://root:@localhost/flask_blog"
 
     db.init_app(app)
     migrate.init_app(app, db)
