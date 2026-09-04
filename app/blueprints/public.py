@@ -1,7 +1,13 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, redirect
 from app.models import Post
 
 public_bp = Blueprint("public", __name__)
+
+
+@public_bp.route("/")
+def index():
+    """Mengalihkan halaman utama (/) langsung ke halaman Swagger"""
+    return redirect("/apidocs")
 
 
 @public_bp.route("/api/posts", methods=["GET"])
