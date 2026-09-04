@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Registrasi Akun Baru</h2>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul style="color: red;">
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<form method="POST" action="/user/register">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
+    <br>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <br>
+    <button type="submit">Daftar</button>
+</form>
+<p>Sudah punya akun? <a href="/user/login">Login di sini</a></p>
+{% endblock %}

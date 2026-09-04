@@ -1,0 +1,17 @@
+# Virtual Environments
+venv/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Flask instance folder & SQLite databases
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# Env variables (jika nanti menggunakan file .env)
+.env

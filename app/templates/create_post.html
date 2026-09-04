@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Tulis Artikel Baru</h2>
+<form method="POST" action="/post/create">
+    <div>
+        <label>Judul:</label><br>
+        <input type="text" name="title" required style="width: 300px;">
+    </div>
+    <br>
+    <div>
+        <label>Kategori:</label><br>
+        <input type="text" name="category" placeholder="Contoh: Tutorial, Teknologi" required>
+    </div>
+    <br>
+    <div>
+        <label>Konten:</label><br>
+        <textarea name="content" rows="10" cols="50" required></textarea>
+    </div>
+    <br>
+    <button type="submit">Terbitkan</button>
+</form>
+{% endblock %}
