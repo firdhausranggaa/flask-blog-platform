@@ -1,5 +1,7 @@
 # Virtual Environments
 venv/
+env/
+.env/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -7,11 +9,21 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Flask instance folder & SQLite databases
+# Flask instance folder & SQLite databases (Legacy)
 instance/
 *.db
 *.sqlite
 *.sqlite3
 
-# Env variables (jika nanti menggunakan file .env)
+# Env variables & Secrets
 .env
+.env.local
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db

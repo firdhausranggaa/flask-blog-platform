@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, redirect
 from app.models import Post
+from app.schemas import posts_schema
 
 public_bp = Blueprint("public", __name__)
 
@@ -63,18 +64,7 @@ def get_posts():
         page=page, per_page=per_page, error_out=False
     )
 
-    result = []
-    for post in paginated_posts.items:
-        result.append(
-            {
-                "id": post.id,
-                "title": post.title,
-                "content": post.content,
-                "category": post.category,
-                "author": post.author.username,
-                "date_posted": post.date_posted.strftime("%Y-%m-%d %H:%M:%S"),
-            }
-        )
+    result = posts_schema.dump(paginated_posts.items)
 
     return (
         jsonify(
@@ -84,9 +74,6 @@ def get_posts():
                     "total_items": paginated_posts.total,
                     "total_pages": paginated_posts.pages,
                     "current_page": paginated_posts.page,
-                    "per_page": paginated_posts.per_page,
-                    "has_next": paginated_posts.has_next,
-                    "has_prev": paginated_posts.has_prev,
                 },
             }
         ),

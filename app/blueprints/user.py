@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.models import User
-from flask_login import login_required, current_user, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.extensions import db, limiter
 
 user_bp = Blueprint("user", __name__, url_prefix="/api/user")
@@ -55,7 +55,7 @@ def register():
 @limiter.limit("5 per minute")
 def login():
     """
-    Login ke dalam sistem.
+    Login ke dalam sistem menggunakan JWT.
     ---
     tags:
       - Pengguna
@@ -72,62 +72,40 @@ def login():
               type: string
     responses:
       200:
-        description: Login berhasil.
+        description: Login berhasil dan token JWT dikembalikan.
       401:
         description: Kredensial tidak valid.
     """
     data = request.get_json() or {}
-    username = data.get("username", "")
-    password = data.get("password", "")
+    user = User.query.filter_by(username=data.get("username")).first()
 
-    user = User.query.filter_by(username=username).first()
-
-    if user and check_password_hash(user.password, password):
-        login_user(user)
-        return (
-            jsonify(
-                {
-                    "message": "Login berhasil",
-                    "user_id": user.id,
-                    "username": user.username,
-                }
-            ),
-            200,
-        )
+    if user and check_password_hash(user.password, data.get("password")):
+        access_token = create_access_token(identity=str(user.id))
+        return jsonify({"message": "Login berhasil", "access_token": access_token}), 200
 
     return jsonify({"error": "Kredensial tidak valid"}), 401
 
 
-@user_bp.route("/logout", methods=["POST"])
-@login_required
-def logout():
-    """
-    Logout dari sistem (Membutuhkan Login).
-    ---
-    tags:
-      - Pengguna
-    responses:
-      200:
-        description: Logout berhasil.
-      401:
-        description: Belum login.
-    """
-    logout_user()
-    return jsonify({"message": "Logout berhasil"}), 200
-
-
 @user_bp.route("/me", methods=["GET"])
-@login_required
+@jwt_required()
 def me():
     """
     Mendapatkan data profil pengguna yang sedang login.
     ---
     tags:
       - Pengguna
+    security:
+      - Bearer: []
     responses:
       200:
         description: Berhasil mengembalikan data profil.
       401:
-        description: Belum login.
+        description: Belum login atau token tidak valid.
     """
-    return jsonify({"user_id": current_user.id, "username": current_user.username})
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+
+    if not user:
+        return jsonify({"error": "User tidak ditemukan"}), 404
+
+    return jsonify({"user_id": user.id, "username": user.username}), 200
